@@ -30,7 +30,7 @@ describe Assignment do
     end
     f1 = IO.readlines(file1)
     f2 = IO.readlines(file2)
-    if ((f1 - f2).size == 0) then
+    if (f1 - f2).size == 0
       return true
     else
       return false
@@ -64,10 +64,10 @@ describe Assignment do
         end
         it "User database structure in place" do
           expect(User.column_names).to include "password_digest", "username"
-          expect(User.column_types["username"].type).to eq :string
-          expect(User.column_types["password_digest"].type).to eq :string
-          expect(User.column_types["created_at"].type).to eq :datetime
-          expect(User.column_types["updated_at"].type).to eq :datetime
+          expect(User.column_for_attribute("username").type).to eq :string
+          expect(User.column_for_attribute("password_digest").type).to eq :string
+          expect(User.column_for_attribute("created_at").type).to eq :datetime
+          expect(User.column_for_attribute("updated_at").type).to eq :datetime
         end
       end
       context "rq02.2 Profile Model" do
@@ -86,43 +86,43 @@ describe Assignment do
         end
         it "Profile database structure in place" do
           expect(Profile.column_names).to include "gender", "birth_year", "first_name", "last_name"
-          expect(Profile.column_types["gender"].type).to eq :string
-          expect(Profile.column_types["birth_year"].type).to eq :integer
-          expect(Profile.column_types["first_name"].type).to eq :string
-          expect(Profile.column_types["last_name"].type).to eq :string
-          expect(User.column_types["created_at"].type).to eq :datetime
-          expect(User.column_types["updated_at"].type).to eq :datetime
+          expect(Profile.column_for_attribute("gender").type).to eq :string
+          expect(Profile.column_for_attribute("birth_year").type).to eq :integer
+          expect(Profile.column_for_attribute("first_name").type).to eq :string
+          expect(Profile.column_for_attribute("last_name").type).to eq :string
+          expect(User.column_for_attribute("created_at").type).to eq :datetime
+          expect(User.column_for_attribute("updated_at").type).to eq :datetime
         end
       end
-      context "rq02.3 TodoList Model" do
-        it "TodoList class implemented" do
-          expect(class_exists?("TodoList"))
-          expect(TodoList < ActiveRecord::Base).to eq(true)
+      context "rq02.3 ToDoList Model" do
+        it "ToDoList class implemented" do
+          expect(class_exists?("ToDoList"))
+          expect(ToDoList < ActiveRecord::Base).to eq(true)
         end
-        context "TodoList class properties defined" do
-          subject(:todolist) { TodoList.new }
+        context "ToDoList class properties defined" do
+          subject(:todolist) { ToDoList.new }
           it { is_expected.to respond_to(:list_due_date) }
           it { is_expected.to respond_to(:list_name) }
           it { is_expected.to respond_to(:created_at) }
           it { is_expected.to respond_to(:updated_at) }
         end
-        it "TodoList database structure in place" do
+        it "ToDoList database structure in place" do
           # rails g model todo_list list_name list_due_date:date
           # rake db:migrate
-          expect(TodoList.column_names).to include "list_name", "list_due_date"
-          expect(TodoList.column_types["list_name"].type).to eq :string
-          expect(TodoList.column_types["list_due_date"].type).to eq :date
-          expect(TodoList.column_types["created_at"].type).to eq :datetime
-          expect(TodoList.column_types["updated_at"].type).to eq :datetime
+          expect(ToDoList.column_names).to include "list_name", "list_due_date"
+          expect(ToDoList.column_for_attribute("list_name").type).to eq :string
+          expect(ToDoList.column_for_attribute("list_due_date").type).to eq :date
+          expect(ToDoList.column_for_attribute("created_at").type).to eq :datetime
+          expect(ToDoList.column_for_attribute("updated_at").type).to eq :datetime
         end
       end
-      context "rq02.4 TodoItem Model" do
-        it "TodoItem class implemented" do
-          expect(class_exists?("TodoItem"))
-          expect(TodoItem < ActiveRecord::Base).to eq(true)
+      context "rq02.4 ToDoItem Model" do
+        it "ToDoItem class implemented" do
+          expect(class_exists?("ToDoItem"))
+          expect(ToDoItem < ActiveRecord::Base).to eq(true)
         end
-        context "TodoItem class properties defined" do
-          subject(:todolist) { TodoItem.new }
+        context "ToDoItem class properties defined" do
+          subject(:todolist) { ToDoItem.new }
           it { is_expected.to respond_to(:due_date) }
           it { is_expected.to respond_to(:title) }
           it { is_expected.to respond_to(:description) }
@@ -130,16 +130,16 @@ describe Assignment do
           it { is_expected.to respond_to(:created_at) }
           it { is_expected.to respond_to(:updated_at) }
         end
-        it "TodoItem database structure in place" do
+        it "ToDoItem database structure in place" do
           # rails g model todo_item due_date:date title description:text completed:boolean
           # rake db:migrate
-          expect(TodoItem.column_names).to include "due_date", "title", "description", "completed"
-          expect(TodoItem.column_types["due_date"].type).to eq :date
-          expect(TodoItem.column_types["title"].type).to eq :string
-          expect(TodoItem.column_types["description"].type).to eq :text
-          expect(TodoItem.column_types["completed"].type).to eq :boolean
-          expect(TodoItem.column_types["created_at"].type).to eq :datetime
-          expect(TodoItem.column_types["updated_at"].type).to eq :datetime
+          expect(ToDoItem.column_names).to include "due_date", "title", "description", "completed"
+          expect(ToDoItem.column_for_attribute("due_date").type).to eq :date
+          expect(ToDoItem.column_for_attribute("title").type).to eq :string
+          expect(ToDoItem.column_for_attribute("description").type).to eq :text
+          expect(ToDoItem.column_for_attribute("completed").type).to eq :boolean
+          expect(ToDoItem.column_for_attribute("created_at").type).to eq :datetime
+          expect(ToDoItem.column_for_attribute("updated_at").type).to eq :datetime
         end
       end
     end
@@ -148,7 +148,7 @@ describe Assignment do
   context "rq03" do
     before do
       User.destroy_all
-      TodoList.destroy_all
+      ToDoList.destroy_all
     end
 
     context "rq03.1 assignment code has create_user method" do
@@ -168,15 +168,16 @@ describe Assignment do
     context "rq03.2 assignment code has create_todolist method" do
       it { is_expected.to respond_to(:create_todolist) }
       it "should create_todolist with provided parameters" do
-        expect(TodoList.find_by list_name: "mylist").to be_nil
+        expect(ToDoList.find_by(list_name: "mylist")).to be_nil
         due_date = Date.today
-        assignment.create_todolist(:name => 'mylist', :due_date => due_date)
-        testList = TodoList.find_by list_name: 'mylist'
-        expect(testList.id).not_to be_nil
-        expect(testList.list_name).to eq "mylist"
-        expect(testList.list_due_date).to eq due_date
-        expect(testList.created_at).not_to be_nil
-        expect(testList.updated_at).not_to be_nil
+        params = { name: 'mylist', due_date: due_date }
+        assignment.create_todolist(params)
+        test_list = ToDoList.find_by(list_name: 'mylist')
+        expect(test_list.id).not_to be_nil
+        expect(test_list.list_name).to eq 'mylist'
+        expect(test_list.list_due_date).to eq due_date
+        expect(test_list.created_at).not_to be_nil
+        expect(test_list.updated_at).not_to be_nil
       end
     end
   end
@@ -184,7 +185,7 @@ describe Assignment do
   context "rq04" do
     before do
       User.destroy_all
-      TodoList.destroy_all
+      ToDoList.destroy_all
     end
 
     context "rq04.1 Must retrieve paginated User results from DB" do
@@ -212,15 +213,15 @@ describe Assignment do
       end
     end
 
-    context "rq04.2 Must retrieve paginated TodoList results from DB" do
+    context "rq04.2 Must retrieve paginated ToDoList results from DB" do
       it { is_expected.to respond_to(:find_alllists) }
-      it "should implement find_alllists that returns a collection of TodoLists and
+      it "should implement find_alllists that returns a collection of ToDoLists and
             honors offset and limit parameters" do
         dateBase  = Date.today
         dateTrack = dateBase
         (0..20).each do |i|
           dateTrack = dateBase + i.day
-          TodoList.create(:list_name => "list_#{i}", :list_due_date => dateTrack)
+          ToDoList.create(:list_name => "list_#{i}", :list_due_date => dateTrack)
         end
         testListsGroup1 = assignment.find_alllists(0, 10)
         testListsGroup2 = assignment.find_alllists(10, 5)
@@ -243,7 +244,7 @@ describe Assignment do
   context "rq05" do
     before do
       User.destroy_all
-      TodoList.destroy_all
+      ToDoList.destroy_all
     end
 
     context "rq05.1 Must Query DB with User exact match" do
@@ -258,13 +259,13 @@ describe Assignment do
       end
     end
 
-    context "rq05.2 Must Query DB with TodoList exact match" do
+    context "rq05.2 Must Query DB with ToDoList exact match" do
       it { is_expected.to respond_to(:find_todolist_byname) }
       it "should implement find_todolist_byname to return all list with a given name" do
-        TodoList.create(:list_name => "My list", :list_due_date => Date.today)
-        TodoList.create(:list_name => "Bob's list", :list_due_date => Date.today)
-        TodoList.create(:list_name => "Joe's list", :list_due_date => Date.today)
-        TodoList.create(:list_name => "My list", :list_due_date => Date.today)
+        ToDoList.create(:list_name => "My list", :list_due_date => Date.today)
+        ToDoList.create(:list_name => "Bob's list", :list_due_date => Date.today)
+        ToDoList.create(:list_name => "Joe's list", :list_due_date => Date.today)
+        ToDoList.create(:list_name => "My list", :list_due_date => Date.today)
         expect(assignment.find_todolist_byname("My list").length).to be(2)
         expect(assignment.find_todolist_byname("Bob's list").length).to be(1)
       end
@@ -274,7 +275,7 @@ describe Assignment do
   context "rq06" do
     before do
       User.destroy_all
-      TodoList.destroy_all
+      ToDoList.destroy_all
     end
 
     context "rq06.1 Must get rows from DB by User PK" do
@@ -287,11 +288,11 @@ describe Assignment do
       end
     end
 
-    context "rq06.2 Must get rows from DB by TodoList PK" do
+    context "rq06.2 Must get rows from DB by ToDoList PK" do
       it { is_expected.to respond_to(:get_todolist_byid) }
       it "should implement the get_todolist_byid method to return todo_list by primary key" do
-        TodoList.create(:list_name => 'my list', :list_due_date => Date.today)
-        testList = TodoList.find_by list_name: 'my list'
+        ToDoList.create(:list_name => 'my list', :list_due_date => Date.today)
+        testList = ToDoList.find_by list_name: 'my list'
         expect(testList.id).not_to be_nil
         expect(assignment.get_todolist_byid(testList.id).list_name).to eq('my list')
       end
@@ -301,7 +302,7 @@ describe Assignment do
   context "rq07" do
     before do
       User.destroy_all
-      TodoList.destroy_all
+      ToDoList.destroy_all
     end
 
     context "rq07.1 Must update User rows in database" do
@@ -314,13 +315,13 @@ describe Assignment do
       end
     end
 
-    context "rq07.2 Must update TodoList rows in database" do
+    context "rq07.2 Must update ToDoList rows in database" do
       it { is_expected.to respond_to(:update_listname) }
       it "should implement update_listname method with parameters id and name" do
-        TodoList.create(:list_name => 'my list', :list_due_date => Date.today)
-        testList = TodoList.find_by list_name: 'my list'
+        ToDoList.create(:list_name => 'my list', :list_due_date => Date.today)
+        testList = ToDoList.find_by list_name: 'my list'
         assignment.update_listname(testList.id, 'Big list')
-        expect(TodoList.find(testList.id).list_name).to eq("Big list")
+        expect(ToDoList.find(testList.id).list_name).to eq("Big list")
       end
     end
   end
@@ -328,7 +329,7 @@ describe Assignment do
   context "rq08" do
     before do
       User.destroy_all
-      TodoList.destroy_all
+      ToDoList.destroy_all
     end
 
     context "rq08.1 Must delete User rows from database" do
@@ -341,13 +342,13 @@ describe Assignment do
       end
     end
 
-    context "rq08.2 Must delete TodoList rows from database" do
+    context "rq08.2 Must delete ToDoList rows from database" do
       it { is_expected.to respond_to(:delete_todolist) }
       it "should implement delete_todolist method which takes a primary key parameter" do
-        list = TodoList.create(:list_name => "delete list", :list_due_date => Date.new(2020))
-        expect(TodoList.find(list.id)).not_to be_nil
+        list = ToDoList.create(:list_name => "delete list", :list_due_date => Date.new(2020))
+        expect(ToDoList.find(list.id)).not_to be_nil
         assignment.delete_todolist(list.id)
-        expect { (TodoList.find(list.id)) }.to raise_error(ActiveRecord::RecordNotFound)
+        expect { (ToDoList.find(list.id)) }.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
   end
