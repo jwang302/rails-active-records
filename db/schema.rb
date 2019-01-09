@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_08_011625) do
+ActiveRecord::Schema.define(version: 2019_01_09_005337) do
 
   create_table "profiles", force: :cascade do |t|
     t.string "gender"
@@ -19,6 +19,8 @@ ActiveRecord::Schema.define(version: 2019_01_08_011625) do
     t.string "last_name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id"
+    t.index ["user_id"], name: "index_profiles_on_user_id"
   end
 
   create_table "to_do_items", force: :cascade do |t|
@@ -28,6 +30,8 @@ ActiveRecord::Schema.define(version: 2019_01_08_011625) do
     t.boolean "completed"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "to_do_list_id"
+    t.index ["to_do_list_id"], name: "index_to_do_items_on_to_do_list_id"
   end
 
   create_table "to_do_lists", force: :cascade do |t|
@@ -35,6 +39,8 @@ ActiveRecord::Schema.define(version: 2019_01_08_011625) do
     t.date "list_due_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id"
+    t.index ["user_id"], name: "index_to_do_lists_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|

@@ -1,352 +1,405 @@
-# frozen_string_literal: true
+require_relative '../config/environment'
 
-require_relative '../assignment/assignment'
+describe "Assignment" do
 
-describe Assignment do
-  subject(:assignment) { Assignment.new }
-
-  before :all do
-    $continue = true
-  end
-
-  around :each do |example|
-    if $continue
-      $continue = false
-      example.run
-      $continue = true unless example.exception
-    else
-      example.skip
+    before :all do
+        $continue = true
     end
-  end
 
-  # helper method to determine if Ruby class exists as a class
-  def class_exists?(class_name)
-    eval(`defined?(#{class_name}) && #{class_name}.is_a?(Class)`)
-  end
+    around :each do |example|
+        if $continue
+            $continue = false 
+            example.run 
+            $continue = true unless example.exception
+        else
+            example.skip
+        end
+    end
 
-  # helper method to determine if two files are the same
-  def files_same?(file1, file2)
-    if File.size(file1) == File.size(file2)
+    #helper method to determine if Ruby class exists as a class
+    def class_exists?(class_name)
+      eval(`defined?(#{class_name}) && #{class_name}.is_a?(Class)`)
+    end
+
+    #helper method to determine if two files are the same
+    def files_same?(file1, file2) 
+      if (File.size(file1) != File.size(file2)) then
+        return false
+      end
       f1 = IO.readlines(file1)
       f2 = IO.readlines(file2)
-      return (f1 - f2).empty?
-    end
-    false
-  end
-
-  context 'rq01' do
-    context 'Generate Rails application' do
-      it 'must have top level structure of a rails application' do
-        expect(File.exist?('Gemfile')).to be(true)
-        expect(Dir.entries('.')).to include('app', 'bin', 'config', 'db', 'lib', 'public', 'log', 'test', 'vendor')
-        expect(Dir.entries('./app')).to include('assets', 'controllers', 'helpers', 'mailers', 'models', 'views')
+      if ((f1 - f2).size == 0) then
+        return true
+      else
+        return false
       end
     end
-  end
 
-  context 'rq02' do
-    # Test to make sure model objects exist and are ActiveRecord objects
-    context 'Generate four(4) Model Classes and Properties' do
-      context 'rq02.1 User Model' do
-        it 'User class implemented' do
-          expect(class_exists?('User'))
-          expect(User < ActiveRecord::Base).to eq(true)
+    context "rq01" do
+      context "Generate Rails application" do
+        it "must have top level structure of a rails application" do
+          expect(File.exists?("Gemfile")).to be(true)
+          expect(Dir.entries(".")).to include("app", "bin", "config", "db", "lib", "public", "log", "test", "vendor")
+          expect(Dir.entries("./app")).to include("assets", "controllers", "helpers", "mailers", "models", "views")        
         end
-        context 'User class properties defined' do
+      end
+    end
+
+    context "rq02" do # Re-use 'User' model and database table
+      context "User Model:" do
+        it "User class created" do
+          expect(class_exists?("User"))
+          expect(User < ActiveRecord::Base).to eq(true)        
+        end
+        context "User class properties added" do
           subject(:user) { User.new }
-          it { is_expected.to respond_to(:username) }
-          it { is_expected.to respond_to(:password_digest) }
-          it { is_expected.to respond_to(:created_at) }
-          it { is_expected.to respond_to(:updated_at) }
+          it { is_expected.to respond_to(:username) } 
+          it { is_expected.to respond_to(:password_digest) } 
+          it { is_expected.to respond_to(:created_at) } 
+          it { is_expected.to respond_to(:updated_at) } 
         end
-        it 'User database structure in place' do
-          expect(User.column_names).to include('password_digest', 'username')
-          expect(User.column_for_attribute('username').type).to eq :string
-          expect(User.column_for_attribute('password_digest').type).to eq :string
-          expect(User.column_for_attribute('created_at').type).to eq :datetime
-          expect(User.column_for_attribute('updated_at').type).to eq :datetime
+        it "User database structure in place" do
+          # rails g model user username password_digest 
+          # rake db:migrate
+          expect(User.column_names).to include "password_digest", "username"
+          expect(User.column_for_attribute("username").type).to eq :string
+          expect(User.column_for_attribute("password_digest").type).to eq :string
+          expect(User.column_for_attribute("created_at").type).to eq :datetime
+          expect(User.column_for_attribute("updated_at").type).to eq :datetime
         end
       end
-      context 'rq02.2 Profile Model' do
-        it 'Profile class implemented' do
-          expect(class_exists?('Profile'))
+    end
+
+    context "rq03" do # Re-use and update 'Profile' model and database table
+      context "Profile Model:" do
+        it "Profile class created" do
+          expect(class_exists?("Profile"))
           expect(Profile < ActiveRecord::Base).to eq(true)
         end
-        context 'Profile class properties defined' do
+        context "Profile class properties added" do
           subject(:profile) { Profile.new }
-          it { is_expected.to respond_to(:gender) }
-          it { is_expected.to respond_to(:birth_year) }
-          it { is_expected.to respond_to(:first_name) }
-          it { is_expected.to respond_to(:last_name) }
-          it { is_expected.to respond_to(:created_at) }
-          it { is_expected.to respond_to(:updated_at) }
+          it { is_expected.to respond_to(:gender) } 
+          it { is_expected.to respond_to(:birth_year) } 
+          it { is_expected.to respond_to(:first_name) } 
+          it { is_expected.to respond_to(:last_name) } 
+          it { is_expected.to respond_to(:user) } 
+          it { is_expected.to respond_to(:created_at) } 
+          it { is_expected.to respond_to(:updated_at) } 
         end
-        it 'Profile database structure in place' do
-          expect(Profile.column_names).to include('gender', 'birth_year', 'first_name', 'last_name')
-          expect(Profile.column_for_attribute('gender').type).to eq :string
-          expect(Profile.column_for_attribute('birth_year').type).to eq :integer
-          expect(Profile.column_for_attribute('first_name').type).to eq :string
-          expect(Profile.column_for_attribute('last_name').type).to eq :string
-          expect(User.column_for_attribute('created_at').type).to eq :datetime
-          expect(User.column_for_attribute('updated_at').type).to eq :datetime
-        end
-      end
-      context 'rq02.3 ToDoList Model' do
-        it 'ToDoList class implemented' do
-          expect(class_exists?('ToDoList'))
-          expect(ToDoList < ActiveRecord::Base).to eq(true)
-        end
-        context 'ToDoList class properties defined' do
-          subject(:todolist) { ToDoList.new }
-          it { is_expected.to respond_to(:list_due_date) }
-          it { is_expected.to respond_to(:list_name) }
-          it { is_expected.to respond_to(:created_at) }
-          it { is_expected.to respond_to(:updated_at) }
-        end
-        it 'ToDoList database structure in place' do
-          # rails g model todo_list list_name list_due_date:date
+        it "Profile database structure in place" do
+          # rails g model profile gender birth_year:integer first_name last_name 
           # rake db:migrate
-          expect(ToDoList.column_names).to include('list_name', 'list_due_date')
-          expect(ToDoList.column_for_attribute('list_name').type).to eq :string
-          expect(ToDoList.column_for_attribute('list_due_date').type).to eq :date
-          expect(ToDoList.column_for_attribute('created_at').type).to eq :datetime
-          expect(ToDoList.column_for_attribute('updated_at').type).to eq :datetime
+          expect(Profile.column_names).to include "gender", "birth_year", "first_name", "last_name"
+          expect(Profile.column_for_attribute("gender").type).to eq :string
+          expect(Profile.column_for_attribute("birth_year").type).to eq :integer
+          expect(Profile.column_for_attribute("first_name").type).to eq :string
+          expect(Profile.column_for_attribute("last_name").type).to eq :string
+          expect(User.column_for_attribute("created_at").type).to eq :datetime
+          expect(User.column_for_attribute("updated_at").type).to eq :datetime
+        end
+        it "Profile 1:1 belongs_to relationship to User in place" do
+          expect(Profile.reflect_on_association(:user).macro).to eq :belongs_to
+        end
+        it "User 1:1 has_one relationship to Profile in place" do
+          expect(User.reflect_on_association(:profile).macro).to eq :has_one
         end
       end
-      context 'rq02.4 ToDoItem Model' do
-        it 'ToDoItem class implemented' do
-          expect(class_exists?('ToDoItem'))
+    end
+
+    context "rq04" do # Re-use and update 'ToDoList' model and database table
+      context "ToDoList Model" do
+        it "ToDoList class" do
+          expect(class_exists?("ToDoList"))
+          expect(ToDoList < ActiveRecord::Base).to eq(true)
+       end
+      end
+      context "ToDoList class properties added" do
+        subject(:ToDoList) { ToDoList.new }
+        it { is_expected.to respond_to(:list_due_date) } 
+        it { is_expected.to respond_to(:list_name) } 
+        it { is_expected.to respond_to(:created_at) } 
+        it { is_expected.to respond_to(:updated_at) } 
+      end
+      it "ToDoList database structure in place" do
+        # rails g model todo_list list_name list_due_date:date         s
+        # rake db:migrate
+        expect(ToDoList.column_names).to include "list_name", "list_due_date"
+        expect(ToDoList.column_for_attribute("list_name").type).to eq :string
+        expect(ToDoList.column_for_attribute("list_due_date").type).to eq :date
+        expect(ToDoList.column_for_attribute("created_at").type).to eq :datetime
+        expect(ToDoList.column_for_attribute("updated_at").type).to eq :datetime
+      end
+    end
+
+    context "rq05" do #add migration for ToDoList -> User relationship
+      it "ToDoList has a many:1 belongs_to relationship with User" do
+        expect(ToDoList.reflect_on_association(:user).macro).to eq :belongs_to
+      end
+      it "User has a 1:many has_many relationship with ToDoList" do
+        expect(User.reflect_on_association(:to_do_lists).macro).to eq :has_many
+      end
+    end
+
+    context "rq06" do # Re-use and update 'ToDoItem' model and database table
+      context "ToDoItem Model" do
+        it "ToDoItem class" do
+          expect(class_exists?("ToDoItem"))
           expect(ToDoItem < ActiveRecord::Base).to eq(true)
         end
-        context 'ToDoItem class properties defined' do
-          subject(:todolist) { ToDoItem.new }
-          it { is_expected.to respond_to(:due_date) }
-          it { is_expected.to respond_to(:title) }
-          it { is_expected.to respond_to(:description) }
-          it { is_expected.to respond_to(:completed) }
-          it { is_expected.to respond_to(:created_at) }
-          it { is_expected.to respond_to(:updated_at) }
+      end
+      context "ToDoItem class properties added" do
+        subject(:ToDoItem) { ToDoItem.new }
+        it { is_expected.to respond_to(:due_date) } 
+        it { is_expected.to respond_to(:title) } 
+        it { is_expected.to respond_to(:completed) }
+        it { is_expected.to respond_to(:description) } 
+        it { is_expected.to respond_to(:created_at) } 
+        it { is_expected.to respond_to(:updated_at) } 
+      end
+      it "ToDoItem database structure in place" do
+        # rails g model todo_item due_date:date title description:text         
+        # rake db:migrate
+        expect(ToDoItem.column_names).to include "due_date", "title", "description", "completed"
+        expect(ToDoItem.column_for_attribute("due_date").type).to eq :date
+        expect(ToDoItem.column_for_attribute("title").type).to eq :string
+        expect(ToDoItem.column_for_attribute("description").type).to eq :text
+        expect(ToDoItem.column_for_attribute("created_at").type).to eq :datetime
+        expect(ToDoItem.column_for_attribute("updated_at").type).to eq :datetime
+        expect(ToDoItem.column_for_attribute("completed").type).to eq :boolean
+      end
+      it "ToDoItem has a many:1 belongs_to relationship with ToDoList" do
+        expect(ToDoItem.reflect_on_association(:to_do_list).macro).to eq :belongs_to
+      end         
+      it "ToDoList has a 1:many has_many relationship with ToDoItem" do
+        expect(ToDoList.reflect_on_association(:to_do_items).macro).to eq :has_many
+      end         
+      it "ToDoItem will be destroyed when ToDoList deleted" do
+         expect(ToDoList.reflect_on_association(:to_do_items).options[:dependent]).to eq :destroy
+      end         
+    end
+
+    context "rq08" do # Re-use and update 'ToDoItem' model and database table
+      it "User has a 1:many relationship with ToDoItem" do
+        expect(User.reflect_on_association(:to_do_items).macro).to eq :has_many
+      end
+      it "User has a 1:many relationship with ToDoItem through ToDoList" do
+        expect(User.reflect_on_association(:to_do_items).options[:through]).to eq :to_do_lists
+        expect(User.reflect_on_association(:to_do_items).options[:source]).to eq :to_do_items
+      end
+    end
+
+    context "rq09" do
+      context "check seed file" do
+        user_list = [
+              ["Carly", "Fiorina", "female", 1954],
+              ["Donald", "Trump", "male", 1946],
+              ["Ben", "Carson", "male", 1951],
+              ["Hillary", "Clinton", "female", 1947]
+        ]
+
+        before do
+          User.destroy_all
+          ToDoList.destroy_all
+          ToDoItem.destroy_all
+          Profile.destroy_all
+          load "#{Rails.root}/db/seeds.rb"
         end
-        it 'ToDoItem database structure in place' do
-          # rails g model todo_item due_date:date title description:text completed:boolean
-          # rake db:migrate
-          expect(ToDoItem.column_names).to include('due_date', 'title', 'description', 'completed')
-          expect(ToDoItem.column_for_attribute('due_date').type).to eq :date
-          expect(ToDoItem.column_for_attribute('title').type).to eq :string
-          expect(ToDoItem.column_for_attribute('description').type).to eq :text
-          expect(ToDoItem.column_for_attribute('completed').type).to eq :boolean
-          expect(ToDoItem.column_for_attribute('created_at').type).to eq :datetime
-          expect(ToDoItem.column_for_attribute('updated_at').type).to eq :datetime
+
+        it "has a file for seeding the database" do
+          expect(File).to exist("#{Rails.root}/db/seeds.rb")
+        end
+        it "must have Users with lastnames for usernames as directed in assignment" do
+          expect(User.all.to_a.length).to be(4)
+          expect(User.all.map{ |x| x.username }).to include("Trump", "Fiorina", "Carson", "Clinton")
+        end
+
+        it "must have Profiles set up for each user with the given data" do 
+          expect(Profile.all.length).to be(4)
+          user_list.each do | fname, lname, gender, byear | 
+            p = Profile.find_by(last_name: lname)
+            expect(p.first_name).to eql(fname)
+            expect(p.gender).to eql(gender)
+            expect(p.birth_year).to eql(byear)
+          end
+        end
+
+        it "must have ToDoList set up as directed" do
+          expect(ToDoList.all.length).to be(4)
+          user_list.each do | fname, lname, gender, byear |
+            expect(ToDoList.find_by(user: User.find_by(username: lname))).to_not be_nil
+          end
+        end        
+
+        it "must have ToDoItems set up as directed" do
+          expect(ToDoItem.all.length).to be(20)
+          user_list.each do | fname, lname, gender, byear |
+            user = User.find_by(username: lname)
+            expect(user.to_do_items.count).to be(5)
+          end
         end
       end
     end
-  end
 
-  context 'rq03' do
-    before do
-      User.destroy_all
-      ToDoList.destroy_all
-    end
-
-    context 'rq03.1 assignment code has create_user method' do
-      it { is_expected.to respond_to(:create_user) }
-      it 'should create_user with provided parameters' do
-        expect(User.find_by(username: 'joesmith')).to be_nil
-        assignment.create_user(username: 'joesmith', password_digest: 'xxx')
-        test_user = User.find_by username: 'joesmith'
-        expect(test_user.id).not_to be_nil
-        expect(test_user.username).to eq 'joesmith'
-        expect(test_user.password_digest).to eq 'xxx'
-        expect(test_user.created_at).not_to be_nil
-        expect(test_user.updated_at).not_to be_nil
-      end
-    end
-
-    context 'rq03.2 assignment code has create_todolist method' do
-      it { is_expected.to respond_to(:create_todo_list) }
-      it 'should create_todolist with provided parameters' do
-        expect(ToDoList.find_by(list_name: 'mylist')).to be_nil
-        due_date = Date.today
-        params   = { name: 'mylist', due_date: due_date }
-        assignment.create_todo_list(params)
-        test_list = ToDoList.find_by(list_name: 'mylist')
-        expect(test_list.id).not_to be_nil
-        expect(test_list.list_name).to eq 'mylist'
-        expect(test_list.list_due_date).to eq due_date
-        expect(test_list.created_at).not_to be_nil
-        expect(test_list.updated_at).not_to be_nil
-      end
-    end
-  end
-
-  context 'rq04' do
-    before do
-      User.destroy_all
-      ToDoList.destroy_all
-    end
-
-    context 'rq04.1 Must retrieve paginated User results from DB' do
-      it { is_expected.to respond_to(:find_all_users) }
-      it 'should implement find_allusers that returns a collection of Users and
-            honors offset and limit parameters' do
-        last_time = Time.now
+    context "rq10" do
+      it "Default scope on ToDoItem should result in collection in ascending order by due_date" do
+        user = User.create(:username=>"testUser", :password_digest=>"xxxx")
+        tdlist = ToDoList.create(:list_name=>"my list", :list_due_date=>Date.today, :user_id=>user.id)
+        dateRange = 100
+        dateTrack = Date.today
         (0..20).each do |i|
-          User.create(:username => "user_#{i}", :password_digest => 'xxx')
+            dateTrack = Date.today + rand(0..dateRange).day
+            ToDoItem.create(:due_date=>dateTrack, :title=>"My Item #{i}", :description=>"Item Details #{i}", :to_do_list_id=>tdlist.id)
         end
-        test_users_group1 = assignment.find_all_users(0, 10)
-        test_users_group2 = assignment.find_all_users(10, 5)
-
+        ToDoItemGroup = ToDoItem.all
         # test that results are sorted by updated_at and are ascending
-        test_users_group1.each do |t|
-          expect(t.updated_at).to be >= last_time
-          last_time = t.updated_at
+        lastTime = Date.today
+        ToDoItemGroup.each do |t| 
+          expect(t.due_date).to be >= lastTime
+          lastTime = t.due_date
         end
-
-        # Test that limits and offset are correct
-        expect(test_users_group1.length).to be(10)
-        expect(test_users_group2.length).to be(5)
-        expect(test_users_group1[9].username).to eq('user_9')
-        expect(test_users_group2[0].username).to eq('user_10')
       end
-    end
 
-    context 'rq04.2 Must retrieve paginated ToDoList results from DB' do
-      it { is_expected.to respond_to(:find_all_lists) }
-      it 'should implement find_alllists that returns a collection of ToDoLists and
-            honors offset and limit parameters' do
-        date_base  = Date.today
-        date_track = date_base
+      it "Default scope on ToDoList should result in collection in ascending order by list_due_date" do
+        user = User.create(:username=>"testUser", :password_digest=>"xxxx")
+        dateRange = 100
+        dateTrack = Date.today
         (0..20).each do |i|
-          date_track = date_base + i.day
-          ToDoList.create(list_name: "list_#{i}", list_due_date: date_track)
+          dateTrack = Date.today + rand(0..dateRange).day
+          ToDoList.create(:list_name=>"my list #{i}", :list_due_date=>dateTrack, :user_id=>user.id)
         end
-        test_lists_group1 = assignment.find_all_lists(0, 10)
-        test_lists_group2 = assignment.find_all_lists(10, 5)
+        ToDoListGroup = ToDoList.all
+        # test that results are sorted by updated_at and are ascending
+        lastTime = Date.today
+        ToDoListGroup.each do |t| 
+          expect(t.list_due_date).to be >= lastTime
+          lastTime = t.list_due_date
+        end
+      end
+    end
 
-        # test that results are sorted by updated_at and are descending
-        test_lists_group1.each do |t|
-          expect(t.list_due_date).to be <= date_track
-          date_track = t.list_due_date
+    context "rq11" do
+      context "Validators:" do
+        it "does not allow a User without a username" do
+          expect(User.new(:username=> "")).to_not be_valid
         end
 
-        # Test that limits and offset are correct
-        expect(test_lists_group1.length).to be(10)
-        expect(test_lists_group2.length).to be(5)
-        expect(test_lists_group1[9].list_name).to eq('list_11')
-        expect(test_lists_group2[0].list_name).to eq('list_10')
-      end
-    end
-  end
+        user = User.create(
+          username: 'user',
+          password_digest: 'password'
+        )
 
-  context 'rq05' do
-    before do
-      User.destroy_all
-      ToDoList.destroy_all
-    end
+        it "does not allow a Profile with a null first and last name" do
+          expect(user.create_profile(:first_name=>nil, :last_name=>nil, :gender=>"male")).to_not be_valid
+        end
+        it "allows a Profile with a null first name when last name present" do
+          expect(user.create_profile(:first_name=>nil, :last_name=>"Smith", :gender=>"male")).to be_valid
+        end
+        it "allows a Profile with a null last name when first name present" do
+          expect(user.create_profile(:first_name=>"Joe", :last_name=>nil, :gender=>"male")).to be_valid
+        end
 
-    context 'rq05.1 Must Query DB with User exact match' do
-      it { is_expected.to respond_to(:find_user_by_name) }
-      it 'should implement find_user_by_name to return all users with a given name' do
-        User.create(username: 'rich', password_digest: 'xxx')
-        User.create(username: 'bob', password_digest: 'xxx')
-        User.create(username: 'joe', password_digest: 'xxx')
-        User.create(username: 'rich', password_digest: 'xxx')
-        expect(assignment.find_user_by_name('rich').length).to be(2)
-        expect(assignment.find_user_by_name('joe').length).to be(1)
-      end
-    end
-
-    context 'rq05.2 Must Query DB with ToDoList exact match' do
-      it { is_expected.to respond_to(:find_todo_list_by_name) }
-      it 'should implement find_todo_list_by_name to return all list with a given name' do
-        ToDoList.create(list_name: 'My list', list_due_date: Date.today)
-        ToDoList.create(list_name: 'Bob\'s list', list_due_date: Date.today)
-        ToDoList.create(list_name: 'Joe\'s list', list_due_date: Date.today)
-        ToDoList.create(list_name: 'My list', list_due_date: Date.today)
-        expect(assignment.find_todo_list_by_name('My list').length).to be(2)
-        expect(assignment.find_todo_list_by_name('Bob\'s list').length).to be(1)
-      end
-    end
-  end
-
-  context 'rq06' do
-    before do
-      User.destroy_all
-      ToDoList.destroy_all
-    end
-
-    context 'rq06.1 Must get rows from DB by User PK' do
-      it { is_expected.to respond_to(:get_user_by_id) }
-      it 'should implement the get_user_byid method to return user by primary key' do
-        User.create(username: 'joesmith', password_digest: 'xxx')
-        test_user = User.find_by username: 'joesmith'
-        expect(test_user.id).not_to be_nil
-        expect(assignment.get_user_by_id(test_user.id).username).to eq('joesmith')
+        it "does not allow a Profile with a gender other than male or female " do
+          expect(user.create_profile(:first_name=>"first", :last_name=>"last", :gender=>"neutral")).to_not be_valid
+        end
+        it "does not allow a boy named Sue" do
+          expect(user.create_profile(:first_name=>"Sue", :last_name=>"last", :gender=>"male")).to_not be_valid
+        end
+        it "allows a Profile with gender male" do
+          expect(user.create_profile(:first_name=>"first", :last_name=>"last", :gender=>"male")).to be_valid
+        end
+        it "allows a Profile with gender female" do
+          expect(user.create_profile(:first_name=>"first", :last_name=>"last", :gender=>"female")).to be_valid
+        end
       end
     end
 
-    context 'rq06.2 Must get rows from DB by ToDoList PK' do
-      it { is_expected.to respond_to(:get_todo_list_by_id) }
-      it 'should implement the get_todo_list_by_id method to return todo_list by primary key' do
-        ToDoList.create(list_name: 'my list', list_due_date: Date.today)
-        test_list = ToDoList.find_by list_name: 'my list'
-        expect(test_list.id).not_to be_nil
-        expect(assignment.get_todo_list_by_id(test_list.id).list_name).to eq('my list')
+    context "check database operations" do
+      # We will only test User and ToDoList for this assignment
+      before do
+        User.destroy_all
+        ToDoList.destroy_all
+        ToDoItem.destroy_all
+        Profile.destroy_all
+      end
+ 
+      context "rq12" do
+        it "Cascading delete is represented in model dependencies" do
+          expect(User.reflect_on_association(:profile).options[:dependent]).to eq :destroy
+          expect(User.reflect_on_association(:to_do_lists).options[:dependent]).to eq :destroy
+          expect(ToDoList.reflect_on_association(:to_do_items).options[:dependent]).to eq :destroy
+        end
+        it "User delete must cascade delete to Profile, ToDoList and ToDoItems" do
+          user = User.create(:username=>"testUser", :password_digest=>"xxxx")
+          profile = Profile.create(:first_name=>"Joe", :last_name=>"Smith", :birth_year=>2000, :gender=>"male", :user_id=>user.id)
+          tdlist = ToDoList.create(:list_name=>"my list", :list_due_date=>Date.today, :user_id=>user.id)
+          tditem = ToDoItem.create(:due_date=>Date.today, :title=>"My Item", :description=>"Item Details", :to_do_list_id=>tdlist.id)
+          expect(User.find_by(id: user.id)).to_not be_nil           
+          expect(Profile.find_by(id: profile.id)).to_not be_nil           
+          expect(ToDoList.find_by(id: tdlist.id)).to_not be_nil           
+          expect(ToDoItem.find_by(id: tditem.id)).to_not be_nil     
+          # remove user with method and test that all related objects are nil
+          lastId = user.id
+          user.destroy
+          # test that user and all other objects link to that user no longer exist
+          expect(User.find_by(id: lastId)).to be_nil           
+          expect(Profile.find_by(id: profile.id)).to be_nil           
+          expect(ToDoList.find_by(id: tdlist.id)).to be_nil           
+          expect(ToDoItem.find_by(id: tditem.id)).to be_nil  
+        end
+      end
+
+      context "rq13" do
+        context "User has a get_completed_count method" do
+          subject(:user) { User.new }
+          it { is_expected.to respond_to(:get_completed_count) }
+        end
+        it "Will return the number of completed todo_items for a specified user" do
+          user = User.create(:username=>"testUser", :password_digest=>"xxxx")
+          tdlist1 = ToDoList.create(:list_name=>"my list 1", :list_due_date=>Date.today, :user_id=>user.id)
+          tdlist2 = ToDoList.create(:list_name=>"my list 2", :list_due_date=>Date.today, :user_id=>user.id)
+          completeCount = 0
+          (0..10).each do |i|
+            cval = [true, false].sample
+            if cval 
+              completeCount = completeCount + 1
+            end
+            to_do_item = ToDoItem.create(:completed=>cval, :due_date=>Date.today, :title=>"My List 1 Item #{i}", :description=>"Item Details #{i}", :to_do_list_id=>tdlist1.id)
+            cval = [true, false].sample
+            if cval 
+              completeCount = completeCount + 1
+            end
+            to_do_item = ToDoItem.create(:completed=>cval, :due_date=>Date.today, :title=>"My List 2 Item #{i}", :description=>"Item Details #{i}", :to_do_list_id=>tdlist2.id)
+          end
+          expect(user.get_completed_count).to eq completeCount
+        end
+      end
+
+      context "rq14 - Profile" do
+        it "should have a get_all_profiles class method" do
+          expect(Profile).to respond_to(:get_all_profiles)
+        end
+        it "will return a list of profiles between requested birth years in ascending order" do
+          user = User.create(:username=>"testUser", :password_digest=>"xxxx")
+          startYear = 1960
+          endYear = 2000
+          testYear = 1985
+          testCount = 0
+          (0..20).each do |i|
+            birthYear = startYear + rand(0..(endYear - startYear))
+            if (birthYear <= testYear)
+              testCount = testCount + 1
+            end
+            profile = Profile.create(:user_id=>user.id, :gender=>"male", :birth_year=>birthYear, :first_name=>"User #{i}", :last_name=>"Smith#{i}")
+          end
+          profileGroup = Profile.get_all_profiles(startYear, testYear)
+          expect(profileGroup.length).to be(testCount)
+          # test that results are sorted by birthyear and are ascending
+          year = startYear
+          profileGroup.each do |t| 
+            expect(t.birth_year).to be >= year
+            year = t.birth_year
+          end
+        end
       end
     end
-  end
-
-  context 'rq07' do
-    before do
-      User.destroy_all
-      ToDoList.destroy_all
-    end
-
-    context 'rq07.1 Must update User rows in database' do
-      it { is_expected.to respond_to(:update_password) }
-      it 'should implement update_password method with parameters id and password_digest' do
-        User.create(username: 'joesmith', password_digest: 'xxx')
-        test_user = User.find_by username: 'joesmith'
-        assignment.update_password(test_user.id, 'newpassword')
-        expect(User.find(test_user.id).password_digest).to eq('newpassword')
-      end
-    end
-
-    context 'rq07.2 Must update ToDoList rows in database' do
-      it { is_expected.to respond_to(:update_list_name) }
-      it 'should implement update_list_name method with parameters id and name' do
-        ToDoList.create(list_name: 'my list', list_due_date: Date.today)
-        test_list = ToDoList.find_by list_name: 'my list'
-        assignment.update_list_name(test_list.id, 'Big list')
-        expect(ToDoList.find(test_list.id).list_name).to eq('Big list')
-      end
-    end
-  end
-
-  context 'rq08' do
-    before do
-      User.destroy_all
-      ToDoList.destroy_all
-    end
-
-    context 'rq08.1 Must delete User rows from database' do
-      it { is_expected.to respond_to(:delete_user) }
-      it 'should implement delete_user method which takes a primary key parameter' do
-        user = User.create(username: 'deletetest', password_digest: 'foobar')
-        expect(User.find(user.id)).not_to be_nil
-        assignment.delete_user(user.id)
-        expect { User.find(user.id) }.to raise_error(ActiveRecord::RecordNotFound)
-      end
-    end
-
-    context 'rq08.2 Must delete ToDoList rows from database' do
-      it { is_expected.to respond_to(:delete_todo_list) }
-      it 'should implement delete_todo_list method which takes a primary key parameter' do
-        list = ToDoList.create(list_name: 'delete list', list_due_date: Date.new(2020))
-        expect(ToDoList.find(list.id)).not_to be_nil
-        assignment.delete_todo_list(list.id)
-        expect { ToDoList.find(list.id) }.to raise_error(ActiveRecord::RecordNotFound)
-      end
-    end
-  end
 end
